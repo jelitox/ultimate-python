@@ -1,5 +1,20 @@
 def main():
-    # Define two `set` collections
+    # Let's define one `set` for starters
+    simple_set = {0, 1, 2}
+
+    # A set is dynamic like a `list` and `tuple`
+    simple_set.add(3)
+    simple_set.remove(0)
+    assert simple_set == {1, 2, 3}
+
+    # Unlike a `list and `tuple`, it is not an ordered sequence as it
+    # does not allow duplicates to be added
+    for _ in range(5):
+        simple_set.add(0)
+        simple_set.add(4)
+    assert simple_set == {0, 1, 2, 3, 4}
+
+    # Now let's define two new `set` collections
     multiples_two = set()
     multiples_four = set()
 
@@ -8,8 +23,9 @@ def main():
         multiples_two.add(i * 2)
         multiples_four.add(i * 4)
 
-    print("Multiples of two", multiples_two)
-    print("Multiples of three", multiples_four)
+    # As we can see, both sets have similarities and differences
+    assert multiples_two == {0, 2, 4, 6, 8, 10, 12, 14, 16, 18}
+    assert multiples_four == {0, 4, 8, 12, 16, 20, 24, 28, 32, 36}
 
     # We cannot decide in which order the numbers come out - so let's
     # look for fundamental truths instead, such as divisibility against
@@ -18,8 +34,6 @@ def main():
     multiples_common = multiples_two.intersection(multiples_four)
     for number in multiples_common:
         assert number % 2 == 0 and number % 4 == 0
-
-    print("Multiples in common", multiples_common)
 
     # We can compute exclusive multiples
     multiples_two_exclusive = multiples_two.difference(multiples_four)
@@ -31,19 +45,15 @@ def main():
     for number in multiples_four_exclusive:
         assert 18 < number < 40
 
-    print("Exclusive multiples of two", multiples_two_exclusive)
-    print("Exclusive multiples of four", multiples_four_exclusive)
-
     # By computing a set union against the two sets, we have all integers
     # in this program
     multiples_all = multiples_two.union(multiples_four)
-    print("All multiples", multiples_all)
 
     # Check if set A is a subset of set B
     assert multiples_four_exclusive.issubset(multiples_four)
     assert multiples_four.issubset(multiples_all)
 
-    # Check that set A is a subset and superset of itself
+    # Check if set A is a subset and superset of itself
     assert multiples_all.issubset(multiples_all)
     assert multiples_all.issuperset(multiples_all)
 

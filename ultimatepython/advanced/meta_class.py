@@ -30,7 +30,7 @@ class ModelMeta(type):
         kls = super().__new__(mcs, name, bases, attrs)
 
         # Abstract model does not have a `model_name` but a real model does.
-        # We will leverage this fact later on this routine.
+        # We will leverage this fact later on this routine
         if attrs.get("__abstract__") is True:
             kls.model_name = None
         else:
@@ -57,7 +57,7 @@ class ModelMeta(type):
         # the metaclass `table` registry. After all the tables are
         # registered, the registry can be sent to a database adapter
         # which uses each table to create a properly defined schema
-        # for the database of choice (i.e. PostgreSQL, MySQL).
+        # for the database of choice (i.e. PostgreSQL, MySQL)
         if kls.model_name:
             kls.model_table = ModelTable(kls.model_name, kls.model_fields)
             ModelMeta.tables[kls.model_name] = kls.model_table
@@ -80,16 +80,9 @@ class ModelTable:
         self.table_name = table_name
         self.table_fields = table_fields
 
-    def __repr__(self):
-        return f"<ModelTable name={self.table_name}>"
-
 
 class BaseField(ABC):
     """Base field."""
-
-    def __repr__(self):
-        """Brief representation of any field."""
-        return f"<{type(self).__name__}>"
 
 
 class CharField(BaseField):
@@ -132,22 +125,46 @@ class AddressModel(BaseModel):
 
 
 def main():
-    # Each model was modified at runtime with ModelMeta
-    for real_model in BaseModel.__subclasses__():
-        assert real_model.is_registered
-        print("Real model name", real_model.model_name)
-        print("Real model fields", real_model.model_fields)
-        print("Real model table", real_model.model_table)
+    # Real models are given a name at runtime with `ModelMeta`
+    assert UserModel.model_name == "user_rocks"
+    assert AddressModel.model_name == "address"
 
-    # Each model was registered at runtime with ModelMeta
-    for meta_table in ModelMeta.tables.values():
-        print("ModelMeta table", meta_table)
+    # Real models are given fields at runtime with `ModelMeta`
+    assert "row_id" in UserModel.model_fields
+    assert "row_id" in AddressModel.model_fields
+    assert "username" in UserModel.model_fields
+    assert "address" in AddressModel.model_fields
 
-    # Base model was given special treatment, as expected
+    # Real models are registered at runtime with `ModelMeta`
+    assert UserModel.is_registered
+    assert AddressModel.is_registered
+
+    # Real models have a `ModelTable` that can be used for DB setup
+    assert isinstance(ModelMeta.tables[UserModel.model_name], ModelTable)
+    assert isinstance(ModelMeta.tables[AddressModel.model_name], ModelTable)
+
+    # Base model is given special treatment at runtime
     assert not BaseModel.is_registered
     assert BaseModel.model_name is None
     assert BaseModel.model_table is None
 
+    # Every model is created by `ModelMeta`
+    assert isinstance(BaseModel, ModelMeta)
+    assert all(isinstance(model, ModelMeta)
+               for model in BaseModel.__subclasses__())
 
-if __name__ == '__main__':
+    # And `ModelMeta` is created by `type`
+    assert isinstance(ModelMeta, type)
+
+    # And `type` is created by `type` itself
+    assert isinstance(type, type)
+
+    # And everything in Python is an object!
+    assert isinstance(BaseModel, object)
+    assert isinstance(ModelMeta, object)
+    assert isinstance(type, object)
+    assert isinstance(object, object)
+
+
+if __name__ == "__main__":
     main()

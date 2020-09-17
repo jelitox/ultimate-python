@@ -1,4 +1,5 @@
 import cProfile
+import io
 import pstats
 import time
 
@@ -7,13 +8,13 @@ _SLEEP_DURATION = .001
 
 
 def finish_slower():
-    """Finish slower."""
+    """Finish slower by sleeping more."""
     for _ in range(20):
         time.sleep(_SLEEP_DURATION)
 
 
 def finish_faster():
-    """Finish faster."""
+    """Finish faster by sleeping less."""
     for _ in range(10):
         time.sleep(_SLEEP_DURATION)
 
@@ -34,7 +35,8 @@ def main():
     # There are other ways to sort the stats by, but this is the most
     # common way of doing so. For more info, please consult Python docs:
     # https://docs.python.org/3/library/profile.html
-    ps = pstats.Stats(profile).sort_stats("cumulative")
+    buffer = io.StringIO()
+    ps = pstats.Stats(profile, stream=buffer).sort_stats("cumulative")
 
     # Notice how many times each function was called. In this case, the main
     # bottleneck for `finish_slower` and `finish_faster` is `time.sleep`
@@ -45,6 +47,9 @@ def main():
     # large projects. Consider profiling in isolation when analyzing complex
     # classes and functions
     ps.print_stats()
+    time_sleep_called = any("60" in line and "time.sleep" in line
+                            for line in buffer.getvalue().split("\n"))
+    assert time_sleep_called is True
 
 
 if __name__ == "__main__":

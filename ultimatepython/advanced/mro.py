@@ -2,17 +2,17 @@ class BasePlayer:
     """Base player."""
 
     def ping(self):
-        print("ping", self)
+        return "ping"
 
     def pong(self):
-        print("pong", self)
+        return "pong"
 
 
 class PongPlayer(BasePlayer):
     """Pong player."""
 
     def pong(self):
-        print("PONG", self)
+        return "PONG"
 
 
 class NeutralPlayer(BasePlayer):
@@ -37,14 +37,16 @@ class ConfusedPlayer(PongPlayer, NeutralPlayer):
 
     def ping(self):
         """Override `ping` method."""
-        print("pINg", self)
+        return "pINg"
 
     def ping_pong(self):
         """Run `ping` and `pong` in different ways."""
-        self.ping()
-        super().ping()
-        self.pong()
-        super().pong()
+        return [
+            self.ping(),
+            super().ping(),
+            self.pong(),
+            super().pong()
+        ]
 
 
 class IndecisivePlayer(NeutralPlayer, PongPlayer):
@@ -55,20 +57,22 @@ class IndecisivePlayer(NeutralPlayer, PongPlayer):
 
     Notice that one of the `super()` calls uses additional parameters to
     start the MRO process from another class. This is used for demonstrative
-    purposes and is highly discouraged as this bypasses the default
+    purposes and is highly discouraged as this bypasses the default method
     resolution process.
     """
 
     def pong(self):
         """Override `pong` method."""
-        print("pONg", self)
+        return "pONg"
 
     def ping_pong(self):
         """Run `ping` and `pong` in different ways."""
-        self.ping()
-        super().ping()
-        self.pong()
-        super(PongPlayer, self).pong()  # bypass MRO to `BasePlayer`
+        return [
+            self.ping(),
+            super().ping(),
+            self.pong(),
+            super(PongPlayer, self).pong()  # bypass MRO to `BasePlayer`
+        ]
 
 
 def main():
@@ -81,20 +85,22 @@ def main():
         IndecisivePlayer, NeutralPlayer, PongPlayer, BasePlayer, object]
 
     # Show `ConfusedPlayer` method resolution in action
-    ConfusedPlayer().ping_pong()
+    assert ConfusedPlayer().ping_pong() == ["pINg", "ping", "PONG", "PONG"]
 
     # Show `IndecisivePlayer` method resolution in action
-    IndecisivePlayer().ping_pong()
+    assert IndecisivePlayer().ping_pong() == ["ping", "ping", "pONg", "pong"]
 
+    class_creation_failed = False
     try:
         # Creating a new class `ConfusedPlayer` and `IndecisivePlayer`
-        # result in a `TypeError` because both classes have mismatched
+        # results in a `TypeError` because both classes have mismatched
         # MRO outputs. This means that they cannot be reconciled as
         # one class. Hence `MissingPlayer` will not be created
         type("MissingPlayer", (ConfusedPlayer, IndecisivePlayer), {})
-    except TypeError as e:
-        print(e)
+    except TypeError:
+        class_creation_failed = True
+    assert class_creation_failed is True
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

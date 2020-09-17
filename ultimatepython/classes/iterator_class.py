@@ -1,3 +1,7 @@
+# Module-level constants
+_ITERATION_MESSAGE = "Cyclic loop detected"
+
+
 class Employee:
     """Generic employee class.
 
@@ -25,9 +29,6 @@ class Employee:
         self.name = name
         self.title = title
         self.direct_reports = direct_reports
-
-    def __repr__(self):
-        return f"<Employee name={self.name}>"
 
 
 class IterationError(RuntimeError):
@@ -79,7 +80,7 @@ class EmployeeIterator:
             raise StopIteration
         employee = self.employees_to_visit.pop()
         if employee.name in self.employees_visited:
-            raise IterationError("Cyclic loop detected")
+            raise IterationError(_ITERATION_MESSAGE)
         self.employees_visited.add(employee.name)
         for report in employee.direct_reports:
             self.employees_to_visit.append(report)
@@ -111,7 +112,7 @@ def employee_generator(top_employee):
     while len(to_visit) > 0:
         employee = to_visit.pop()
         if employee.name in visited:
-            raise IterationError("Cyclic loop detected")
+            raise IterationError(_ITERATION_MESSAGE)
         visited.add(employee.name)
         for report in employee.direct_reports:
             to_visit.append(report)
@@ -133,17 +134,18 @@ def main():
 
     # Make sure that the employees are who we expect them to be
     assert all(isinstance(emp, Employee) for emp in employees)
-    print(employees)
 
     # This is not a good day for this company
     hacker = Employee("Unknown", "Hacker", [])
     hacker.direct_reports.append(hacker)
 
-    for iter_fn in (EmployeeIterator, employee_generator):
+    for obj in (EmployeeIterator, employee_generator):
+        call_failed = False
         try:
-            list(iter_fn(hacker))
-        except IterationError as e:
-            print(e)
+            list(obj(hacker))
+        except IterationError:
+            call_failed = True
+        assert call_failed is True
 
 
 if __name__ == "__main__":
